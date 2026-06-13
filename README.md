@@ -33,6 +33,16 @@ npm run dev
 Then open the URL Vite prints (default <http://localhost:5173>). The Express API
 runs on <http://localhost:3001> and Vite proxies `/api/*` to it.
 
+## GitHub Pages
+
+The frontend is configured to deploy to GitHub Pages from this repository.
+The published site uses hash-based routing so deep links and refreshes work on
+Pages.
+
+Deployed site:
+
+- <https://noobmaster69.github.io/TruckPartsInventory/>
+
 ## Scripts
 
 | Command | What it does |
