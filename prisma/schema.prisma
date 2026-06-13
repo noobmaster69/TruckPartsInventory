@@ -1,0 +1,119 @@
+// Prisma schema — Truck Parts Inventory
+// Money is stored in CENTS (integers), never floats. See CLAUDE.md.
+// SQLite has no native enums, so StockMovement.type is a String validated by Zod.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String
+  parentId  Int?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  parts     Part[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Location {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  parts       Part[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Supplier {
+  id          Int            @id @default(autoincrement())
+  name        String
+  contactName String?
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  parts       SupplierPart[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Part {
+  id              Int              @id @default(autoincrement())
+  partNumber      String           @unique
+  name            String
+  description     String?
+  categoryId      Int?
+  category        Category?        @relation(fields: [categoryId], references: [id])
+  manufacturer    String?
+  unitOfMeasure   String           @default("each")
+  costPrice       Int              @default(0) // cents
+  sellPrice       Int              @default(0) // cents
+  quantityOnHand  Int              @default(0) // maintained from StockMovement sum
+  reorderPoint    Int              @default(0)
+  reorderQuantity Int              @default(0)
+  locationId      Int?
+  location        Location?        @relation(fields: [locationId], references: [id])
+  barcode         String?
+  suppliers       SupplierPart[]
+  movements       StockMovement[]
+  fitments        VehicleFitment[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([locationId])
+}
+
+model SupplierPart {
+  id           Int      @id @default(autoincrement())
+  partId       Int
+  part         Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+  supplierId   Int
+  supplier     Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  supplierSku  String?
+  cost         Int      @default(0) // cents
+  leadTimeDays Int?
+  isPreferred  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([partId, supplierId])
+}
+
+model StockMovement {
+  id        Int      @id @default(autoincrement())
+  partId    Int
+  part      Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+  type      String // RECEIVE | SELL | ADJUST | RETURN
+  quantity  Int // signed: + into stock, - out of stock
+  unitCost  Int? // cents
+  reference String? // invoice / job #
+  note      String?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([partId])
+  @@index([createdAt])
+}
+
+model VehicleFitment {
+  id       Int     @id @default(autoincrement())
+  partId   Int
+  part     Part    @relation(fields: [partId], references: [id], onDelete: Cascade)
+  make     String
+  model    String?
+  yearFrom Int?
+  yearTo   Int?
+  engine   String?
+  notes    String?
+
+  @@index([make, model])
+}
