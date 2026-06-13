@@ -1,6 +1,13 @@
+import { demoRequest, useDemoApi } from './demoApi'
+
 // Thin fetch wrappers around the JSON API. All paths are relative to /api,
-// which Vite proxies to the Express backend in dev.
+// which Vite proxies to the Express backend in dev. GitHub Pages builds switch
+// to a bundled demo data store because there is no backend runtime there.
 const BASE = '/api'
+
+function apiMethod(method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
+  return method
+}
 
 async function handle<T>(res: Response, method: string, path: string): Promise<T> {
   if (!res.ok) {
@@ -16,10 +23,12 @@ async function handle<T>(res: Response, method: string, path: string): Promise<T
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
+  if (useDemoApi()) return demoRequest<T>(apiMethod('GET'), path)
   return handle<T>(await fetch(`${BASE}${path}`), 'GET', path)
 }
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  if (useDemoApi()) return demoRequest<T>(apiMethod('POST'), path, body)
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -29,6 +38,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
 }
 
 export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  if (useDemoApi()) return demoRequest<T>(apiMethod('PUT'), path, body)
   const res = await fetch(`${BASE}${path}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -38,5 +48,6 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
 }
 
 export async function apiDelete<T>(path: string): Promise<T> {
+  if (useDemoApi()) return demoRequest<T>(apiMethod('DELETE'), path)
   return handle<T>(await fetch(`${BASE}${path}`, { method: 'DELETE' }), 'DELETE', path)
 }

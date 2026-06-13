@@ -39,6 +39,10 @@ The frontend is configured to deploy to GitHub Pages from this repository.
 The published site uses hash-based routing so deep links and refreshes work on
 Pages.
 
+Because GitHub Pages cannot run the Express/Prisma backend, the published site
+uses bundled demo data in the browser. Local development still talks to the live
+API and SQLite database.
+
 Deployed site:
 
 - <https://noobmaster69.github.io/TruckPartsInventory/>

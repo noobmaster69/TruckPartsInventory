@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
+const demoMode = import.meta.env.PROD && import.meta.env.BASE_URL !== '/'
+
 const nav = [
   { to: '/', label: 'Dashboard', icon: '📊', end: true },
   { to: '/parts', label: 'Parts', icon: '🔧', end: false },
@@ -34,7 +36,10 @@ export function Layout() {
             </NavLink>
           ))}
         </nav>
-        <div className="px-5 py-4 text-xs text-slate-400">Local inventory · SQLite</div>
+        <div className="space-y-1 px-5 py-4 text-xs text-slate-400">
+          <div>Local inventory · SQLite</div>
+          {demoMode && <div className="text-amber-600">GitHub Pages demo data</div>}
+        </div>
       </aside>
       <main className="flex-1 overflow-x-hidden">
         <div className="mx-auto max-w-6xl px-6 py-6">
